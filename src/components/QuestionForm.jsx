@@ -22,28 +22,28 @@ function QuestionForm() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const fetchQuestion = async () => {
+      try {
+        const data = await questionService.getQuestionById(id);
+        setFormData({
+          text: data.text,
+          optionA: data.optionA,
+          optionB: data.optionB,
+          optionC: data.optionC,
+          optionD: data.optionD,
+          correctOption: data.correctOption,
+          difficulty: data.difficulty,
+          points: data.points,
+        });
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to fetch question');
+      }
+    };
+
     if (isEditMode) {
       fetchQuestion();
     }
-  }, [id]);
-
-  const fetchQuestion = async () => {
-    try {
-      const data = await questionService.getQuestionById(id);
-      setFormData({
-        text: data.text,
-        optionA: data.optionA,
-        optionB: data.optionB,
-        optionC: data.optionC,
-        optionD: data.optionD,
-        correctOption: data.correctOption,
-        difficulty: data.difficulty,
-        points: data.points,
-      });
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch question');
-    }
-  };
+  }, [id, isEditMode]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

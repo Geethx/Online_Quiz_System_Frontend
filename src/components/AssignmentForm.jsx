@@ -22,43 +22,43 @@ function AssignmentForm() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const data = await questionService.getAllQuestions();
+        setQuestions(data);
+      } catch (err) {
+        console.error('Failed to fetch questions:', err);
+      }
+    };
+
+    const fetchAssignment = async () => {
+      try {
+        const data = await assignmentService.getAssignmentById(id);
+        
+        // Format dates for datetime-local input
+        const formatDateForInput = (dateString) => {
+          const date = new Date(dateString);
+          return date.toISOString().slice(0, 16);
+        };
+
+        setFormData({
+          name: data.name,
+          description: data.description || '',
+          startTime: formatDateForInput(data.startTime),
+          endTime: formatDateForInput(data.endTime),
+          duration: data.duration,
+          questionIds: data.questions.map(q => q.id),
+        });
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to fetch assignment');
+      }
+    };
+
     fetchQuestions();
     if (isEditMode) {
       fetchAssignment();
     }
-  }, [id]);
-
-  const fetchQuestions = async () => {
-    try {
-      const data = await questionService.getAllQuestions();
-      setQuestions(data);
-    } catch (err) {
-      console.error('Failed to fetch questions:', err);
-    }
-  };
-
-  const fetchAssignment = async () => {
-    try {
-      const data = await assignmentService.getAssignmentById(id);
-      
-      // Format dates for datetime-local input
-      const formatDateForInput = (dateString) => {
-        const date = new Date(dateString);
-        return date.toISOString().slice(0, 16);
-      };
-
-      setFormData({
-        name: data.name,
-        description: data.description || '',
-        startTime: formatDateForInput(data.startTime),
-        endTime: formatDateForInput(data.endTime),
-        duration: data.duration,
-        questionIds: data.questions.map(q => q.id),
-      });
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch assignment');
-    }
-  };
+  }, [id, isEditMode]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

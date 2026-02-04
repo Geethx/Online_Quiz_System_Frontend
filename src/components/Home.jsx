@@ -60,37 +60,6 @@ function Home() {
             </Link>
           </div>
         </div>
-
-        {/* Features */}
-        <div className="mt-12 border-t pt-8">
-          <h2 className="text-2xl font-bold text-center mb-6">Key Features</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-start">
-              <span className="text-green-600 mr-2">✓</span>
-              <span>Multiple choice question management</span>
-            </div>
-            <div className="flex items-start">
-              <span className="text-green-600 mr-2">✓</span>
-              <span>Timed assignment attempts</span>
-            </div>
-            <div className="flex items-start">
-              <span className="text-green-600 mr-2">✓</span>
-              <span>Automatic submission on timer expiry</span>
-            </div>
-            <div className="flex items-start">
-              <span className="text-green-600 mr-2">✓</span>
-              <span>Mark questions for review</span>
-            </div>
-            <div className="flex items-start">
-              <span className="text-green-600 mr-2">✓</span>
-              <span>Assignment scheduling and availability</span>
-            </div>
-            <div className="flex items-start">
-              <span className="text-green-600 mr-2">✓</span>
-              <span>Instant score calculation and results</span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

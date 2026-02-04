@@ -10,6 +10,7 @@ function QuestionList() {
 
   useEffect(() => {
     fetchQuestions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
   const fetchQuestions = async () => {
@@ -52,10 +53,6 @@ function QuestionList() {
       default:
         return 'bg-gray-100 text-gray-800';
     }
-  };
-
-  const getOptionLabel = (index) => {
-    return ['A', 'B', 'C', 'D'][index - 1];
   };
 
   if (loading) {

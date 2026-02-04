@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { attemptService } from '../services/attemptService';
 import { assignmentService } from '../services/assignmentService';
@@ -7,7 +7,6 @@ function AssignmentAttempt() {
   const { attemptId } = useParams();
   const navigate = useNavigate();
 
-  const [attempt, setAttempt] = useState(null);
   const [assignment, setAssignment] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
@@ -19,18 +18,91 @@ function AssignmentAttempt() {
 
   const timerRef = useRef(null);
   const autoSubmitRef = useRef(false);
+  const submittingRef = useRef(false); // Add this ref
 
+  // Remove submitting from dependencies
+  const handleSubmit = useCallback(async (isAuto = false) => {
+    if (submittingRef.current) return; // Use ref instead
+
+    if (!isAuto) {
+      const confirmed = window.confirm(
+        'Are you sure you want to submit? You cannot change your answers after submission.'
+      );
+      if (!confirmed) return;
+    }
+
+    try {
+      submittingRef.current = true; // Update ref
+      setSubmitting(true);
+      await attemptService.submitAttempt(attemptId);
+      navigate(`/results/${attemptId}`);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to submit assignment');
+      submittingRef.current = false; // Reset ref
+      setSubmitting(false);
+    }
+  }, [attemptId, navigate]); // Remove submitting from here
+
+  const handleAutoSubmit = useCallback(async () => {
+    if (autoSubmitRef.current) return;
+    autoSubmitRef.current = true;
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+
+    alert('Time is up! Your assignment will be submitted automatically.');
+    await handleSubmit(true);
+  }, [handleSubmit]);
+
+  // Fetch attempt data on mount
   useEffect(() => {
+    const fetchAttemptData = async () => {
+      try {
+        setLoading(true);
+        const attemptData = await attemptService.getAttemptById(attemptId);
+        
+        if (attemptData.status !== 'IN_PROGRESS') {
+          navigate(`/results/${attemptId}`);
+          return;
+        }
+
+        const assignmentData = await assignmentService.getAssignmentById(attemptData.assignmentId);
+        
+        setAssignment(assignmentData);
+        setQuestions(assignmentData.questions);
+        setRemainingSeconds(attemptData.remainingTimeSeconds);
+
+        // Initialize answers from attempt data
+        const answersMap = {};
+        attemptData.answers.forEach((answer) => {
+          answersMap[answer.questionId] = {
+            selectedAnswer: answer.selectedAnswer,
+            markedForReview: answer.markedForReview,
+          };
+        });
+        setAnswers(answersMap);
+
+        setError(null);
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to load assignment');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchAttemptData();
+    
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
     };
-  }, [attemptId]);
+  }, [attemptId, navigate]);
 
+  // Timer countdown effect
   useEffect(() => {
-    if (remainingSeconds > 0 && !autoSubmitRef.current) {
+    if (remainingSeconds > 0 && !autoSubmitRef.current && !timerRef.current) {
       timerRef.current = setInterval(() => {
         setRemainingSeconds((prev) => {
           if (prev <= 1) {
@@ -40,45 +112,15 @@ function AssignmentAttempt() {
           return prev - 1;
         });
       }, 1000);
-
-      return () => clearInterval(timerRef.current);
     }
-  }, [remainingSeconds]);
 
-  const fetchAttemptData = async () => {
-    try {
-      setLoading(true);
-      const attemptData = await attemptService.getAttemptById(attemptId);
-      
-      if (attemptData.status !== 'IN_PROGRESS') {
-        navigate(`/results/${attemptId}`);
-        return;
+    return () => {
+      if (timerRef.current && (remainingSeconds === 0 || autoSubmitRef.current)) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
       }
-
-      const assignmentData = await assignmentService.getAssignmentById(attemptData.assignmentId);
-      
-      setAttempt(attemptData);
-      setAssignment(assignmentData);
-      setQuestions(assignmentData.questions);
-      setRemainingSeconds(attemptData.remainingTimeSeconds);
-
-      // Initialize answers from attempt data
-      const answersMap = {};
-      attemptData.answers.forEach((answer) => {
-        answersMap[answer.questionId] = {
-          selectedAnswer: answer.selectedAnswer,
-          markedForReview: answer.markedForReview,
-        };
-      });
-      setAnswers(answersMap);
-
-      setError(null);
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load assignment');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+  }, [remainingSeconds, handleAutoSubmit]);
 
   const handleAnswerSelect = async (questionId, optionValue) => {
     const newAnswers = {
@@ -121,38 +163,6 @@ function AssignmentAttempt() {
       });
     } catch (err) {
       console.error('Failed to update review status:', err);
-    }
-  };
-
-  const handleAutoSubmit = async () => {
-    if (autoSubmitRef.current) return;
-    autoSubmitRef.current = true;
-
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
-
-    alert('Time is up! Your assignment will be submitted automatically.');
-    await handleSubmit(true);
-  };
-
-  const handleSubmit = async (isAuto = false) => {
-    if (submitting) return;
-
-    if (!isAuto) {
-      const confirmed = window.confirm(
-        'Are you sure you want to submit? You cannot change your answers after submission.'
-      );
-      if (!confirmed) return;
-    }
-
-    try {
-      setSubmitting(true);
-      await attemptService.submitAttempt(attemptId);
-      navigate(`/results/${attemptId}`);
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to submit assignment');
-      setSubmitting(false);
     }
   };
 
