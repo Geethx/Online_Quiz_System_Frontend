@@ -35,10 +35,15 @@ function AssignmentForm() {
       try {
         const data = await assignmentService.getAssignmentById(id);
         
-        // Format dates for datetime-local input
+        // Format dates for datetime-local input (convert from UTC to local time)
         const formatDateForInput = (dateString) => {
           const date = new Date(dateString);
-          return date.toISOString().slice(0, 16);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          const hours = String(date.getHours()).padStart(2, '0');
+          const minutes = String(date.getMinutes()).padStart(2, '0');
+          return `${year}-${month}-${day}T${hours}:${minutes}`;
         };
 
         setFormData({
@@ -68,6 +73,38 @@ function AssignmentForm() {
     }));
   };
 
+  // Calculate maximum allowed duration based on start and end time
+  const getMaxDuration = () => {
+    if (!formData.startTime || !formData.endTime) return null;
+    const start = new Date(formData.startTime);
+    const end = new Date(formData.endTime);
+    const diffInMinutes = Math.floor((end - start) / (1000 * 60));
+    return diffInMinutes > 0 ? diffInMinutes : 0;
+  };
+
+  // Validate time settings
+  const validateTimes = () => {
+    if (!formData.startTime || !formData.endTime) return null;
+    
+    const start = new Date(formData.startTime);
+    const end = new Date(formData.endTime);
+    const now = new Date();
+    
+    if (start < now) {
+      return 'Start time cannot be in the past';
+    }
+    if (end <= start) {
+      return 'End time must be after start time';
+    }
+    
+    const maxDuration = getMaxDuration();
+    if (formData.duration > maxDuration) {
+      return `Duration cannot exceed ${maxDuration} minutes (time between start and end)`;
+    }
+    
+    return null;
+  };
+
   const handleQuestionToggle = (questionId) => {
     setFormData((prev) => ({
       ...prev,
@@ -82,6 +119,14 @@ function AssignmentForm() {
     setLoading(true);
     setError(null);
 
+    // Validate times
+    const timeError = validateTimes();
+    if (timeError) {
+      setError(timeError);
+      setLoading(false);
+      return;
+    }
+
     if (formData.questionIds.length === 0) {
       setError('Please select at least one question');
       setLoading(false);
@@ -89,10 +134,12 @@ function AssignmentForm() {
     }
 
     try {
+      // Don't convert to ISO, send the datetime-local values directly
+      // Backend will parse them as-is
       const payload = {
         ...formData,
-        startTime: new Date(formData.startTime).toISOString(),
-        endTime: new Date(formData.endTime).toISOString(),
+        startTime: formData.startTime,
+        endTime: formData.endTime,
       };
 
       if (isEditMode) {
@@ -200,10 +247,23 @@ function AssignmentForm() {
                 onChange={handleChange}
                 required
                 min="1"
+                max={getMaxDuration() || undefined}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+              {getMaxDuration() !== null && (
+                <p className="text-sm text-gray-600 mt-1">
+                  Maximum: {getMaxDuration()} minutes (based on start/end time)
+                </p>
+              )}
             </div>
           </div>
+
+          {/* Time validation warning */}
+          {validateTimes() && (
+            <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded">
+              {validateTimes()}
+            </div>
+          )}
 
           {/* Question Selection */}
           <div>
