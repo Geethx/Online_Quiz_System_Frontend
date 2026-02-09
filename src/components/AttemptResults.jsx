@@ -60,6 +60,10 @@ function AttemptResults() {
     return answers.filter((a) => !a.selectedAnswer).length;
   };
 
+  const getMarkedForReview = () => {
+    return answers.filter((a) => a.markedForReview).length;
+  };
+
   const getPercentage = () => {
     if (!attempt?.totalPoints) return 0;
     return ((attempt.score / attempt.totalPoints) * 100).toFixed(2);
@@ -145,7 +149,7 @@ function AttemptResults() {
         </div>
 
         {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
             <div className="text-3xl font-bold text-green-600">{getCorrectAnswers()}</div>
             <div className="text-sm text-gray-600">Correct</div>
@@ -157,6 +161,10 @@ function AttemptResults() {
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
             <div className="text-3xl font-bold text-gray-600">{getUnanswered()}</div>
             <div className="text-sm text-gray-600">Unanswered</div>
+          </div>
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
+            <div className="text-3xl font-bold text-purple-600">{getMarkedForReview()}</div>
+            <div className="text-sm text-gray-600">Marked for Review</div>
           </div>
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
             <div className="text-3xl font-bold text-blue-600">{questions.length}</div>
@@ -200,9 +208,13 @@ function AttemptResults() {
               <div
                 key={question.id}
                 className={`border-2 rounded-lg p-6 ${
-                  isCorrect ? 'border-green-500 bg-green-50' :
-                  wasAnswered ? 'border-red-500 bg-red-50' :
-                  'border-gray-300 bg-gray-50'
+                  answer?.markedForReview ? 
+                    (isCorrect ? 'border-green-500 bg-green-50 ring-4 ring-purple-200' :
+                     wasAnswered ? 'border-red-500 bg-red-50 ring-4 ring-purple-200' :
+                     'border-gray-300 bg-gray-50 ring-4 ring-purple-200') :
+                    (isCorrect ? 'border-green-500 bg-green-50' :
+                     wasAnswered ? 'border-red-500 bg-red-50' :
+                     'border-gray-300 bg-gray-50')
                 }`}
               >
                 {/* Question Header */}
@@ -218,6 +230,11 @@ function AttemptResults() {
                         {question.difficulty}
                       </span>
                       <span className="text-sm text-gray-600">{question.points} points</span>
+                      {answer?.markedForReview && (
+                        <span className="px-3 py-1 rounded-full text-sm font-semibold bg-purple-100 text-purple-800 flex items-center gap-1">
+                          Marked for Review
+                        </span>
+                      )}
                     </div>
                     <p className="text-gray-800 font-medium">{question.text}</p>
                   </div>
@@ -242,15 +259,16 @@ function AttemptResults() {
                 <div className="space-y-2 mt-4">
                   {[1, 2, 3, 4].map((optionValue) => {
                     const isUserAnswer = answer?.selectedAnswer === optionValue;
-                    const isCorrectAnswer = question.correctOption === optionValue;
+                    const isCorrectAnswer = answer?.correctOption === optionValue;
 
                     return (
                       <div
                         key={optionValue}
                         className={`p-3 rounded border-2 ${
+                          isCorrectAnswer && isUserAnswer ? 'border-green-500 bg-green-100' :
                           isCorrectAnswer ? 'border-green-500 bg-green-100' :
                           isUserAnswer ? 'border-red-500 bg-red-100' :
-                          'border-gray-300'
+                          'border-gray-300 bg-white'
                         }`}
                       >
                         <div className="flex items-center justify-between">
@@ -258,11 +276,13 @@ function AttemptResults() {
                             <span className="font-semibold mr-2">
                               {getOptionLabel(optionValue)}.
                             </span>
-                            <span>{getOptionText(question, optionValue)}</span>
+                            <span className={isCorrectAnswer ? 'font-semibold' : ''}>
+                              {getOptionText(question, optionValue)}
+                            </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            {isUserAnswer && (
-                              <span className="text-sm font-semibold text-blue-600">
+                            {isUserAnswer && !isCorrectAnswer && (
+                              <span className="text-sm font-semibold text-red-600">
                                 Your Answer
                               </span>
                             )}
