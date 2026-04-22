@@ -147,7 +147,7 @@ function AssignmentForm() {
       } else {
         await assignmentService.createAssignment(payload);
       }
-      navigate('/assignments');
+      navigate('/admin/assignments');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to save assignment');
     } finally {
@@ -330,7 +330,7 @@ function AssignmentForm() {
             </button>
             <button
               type="button"
-              onClick={() => navigate('/assignments')}
+              onClick={() => navigate('/admin/assignments')}
               className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition"
             >
               Cancel

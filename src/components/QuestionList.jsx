@@ -69,7 +69,7 @@ function QuestionList() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Question Bank</h1>
         <Link
-          to="/questions/new"
+          to="/admin/questions/new"
           className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
         >
           + Add Question
@@ -151,7 +151,7 @@ function QuestionList() {
                 </div>
                 <div className="flex gap-2">
                   <Link
-                    to={`/questions/edit/${question.id}`}
+                    to={`/admin/questions/edit/${question.id}`}
                     className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition"
                   >
                     Edit

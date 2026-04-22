@@ -63,7 +63,7 @@ function AssignmentList() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Assignments</h1>
         <Link
-          to="/assignments/new"
+          to="/admin/assignments/new"
           className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
         >
           + Create Assignment
@@ -109,7 +109,7 @@ function AssignmentList() {
                 </div>
                 <div className="flex gap-2">
                   <Link
-                    to={`/assignments/edit/${assignment.id}`}
+                    to={`/admin/assignments/edit/${assignment.id}`}
                     className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition"
                   >
                     Edit

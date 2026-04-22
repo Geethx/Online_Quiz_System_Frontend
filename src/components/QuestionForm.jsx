@@ -64,7 +64,7 @@ function QuestionForm() {
       } else {
         await questionService.createQuestion(formData);
       }
-      navigate('/questions');
+      navigate('/admin/questions');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to save question');
     } finally {
@@ -230,7 +230,7 @@ function QuestionForm() {
             </button>
             <button
               type="button"
-              onClick={() => navigate('/questions')}
+              onClick={() => navigate('/admin/questions')}
               className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition"
             >
               Cancel

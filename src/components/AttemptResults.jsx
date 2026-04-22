@@ -69,14 +69,6 @@ function AttemptResults() {
     return ((attempt.score / attempt.totalPoints) * 100).toFixed(2);
   };
 
-  const getGrade = (percentage) => {
-    if (percentage >= 90) return { grade: 'A', color: 'text-green-600' };
-    if (percentage >= 80) return { grade: 'B', color: 'text-blue-600' };
-    if (percentage >= 70) return { grade: 'C', color: 'text-yellow-600' };
-    if (percentage >= 60) return { grade: 'D', color: 'text-orange-600' };
-    return { grade: 'F', color: 'text-red-600' };
-  };
-
   const formatDateTime = (dateString) => {
     return new Date(dateString).toLocaleString('en-US', {
       year: 'numeric',
@@ -124,7 +116,6 @@ function AttemptResults() {
   }
 
   const percentage = getPercentage();
-  const gradeInfo = getGrade(percentage);
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -142,9 +133,6 @@ function AttemptResults() {
               {attempt.score} / {attempt.totalPoints}
             </div>
             <div className="text-2xl text-gray-600 mb-2">{percentage}%</div>
-            <div className={`text-4xl font-bold ${gradeInfo.color}`}>
-              Grade: {gradeInfo.grade}
-            </div>
           </div>
         </div>
 
