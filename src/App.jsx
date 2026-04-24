@@ -11,6 +11,7 @@ import AssignmentForm from './components/AssignmentForm';
 import AvailableAssignments from './components/AvailableAssignments';
 import AssignmentAttempt from './components/AssignmentAttempt';
 import AttemptResults from './components/AttemptResults';
+import AssignmentResults from './components/AssignmentResults';
 
 function Navbar() {
   const { user, logout, isAdmin } = useAuth();
@@ -174,6 +175,11 @@ function AppContent() {
           <Route path="/admin/assignments/edit/:id" element={
             <ProtectedRoute allowedRoles={['ADMIN']}>
               <AssignmentForm />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/assignments/:id/results" element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AssignmentResults />
             </ProtectedRoute>
           } />
 
